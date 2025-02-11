@@ -14,6 +14,9 @@ import TaskSummaryBar from "@/components/task/taskSummeryBar";
 import AddTask from "@/components/task/addTask";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import TaskAltIcon from "@mui/icons-material/TaskAlt";
+import PendingActionsIcon from "@mui/icons-material/PendingActions";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import UndoIcon from "@mui/icons-material/Undo";
 import { Task } from "@/types/task";
 
@@ -45,7 +48,7 @@ const TaskList = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto md:mt-4">
       <TaskSummaryBar
         totalTasks={tasks?.length || 0}
         pendingTasks={
@@ -56,28 +59,35 @@ const TaskList = () => {
         }
       />
 
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => setSelectedTask({} as Task)}
-      >
-        Add New Task
-      </Button>
-
-      <div className="flex gap-4 my-4">
+      <div className="flex  gap-4 my-4 justify-center md:justify-start">
         <Button
           variant={!showCompleted ? "contained" : "outlined"}
           color="warning"
+          startIcon={<PendingActionsIcon />}
           onClick={() => setShowCompleted(false)}
+          className="rounded-lg"
         >
-          Pending Tasks
+          Pending
         </Button>
+
         <Button
           variant={showCompleted ? "contained" : "outlined"}
           color="success"
+          startIcon={<TaskAltIcon />}
           onClick={() => setShowCompleted(true)}
+          className="rounded-lg"
         >
-          Completed Tasks
+          Completed
+        </Button>
+
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddCircleOutlineIcon />}
+          onClick={() => setSelectedTask({} as Task)}
+          className="rounded-lg"
+        >
+          Add Task
         </Button>
       </div>
 
@@ -86,45 +96,49 @@ const TaskList = () => {
           <Typography variant="h6" className="mb-2">
             {showCompleted ? "Completed Tasks" : "Pending Tasks"}
           </Typography>
-          {(showCompleted
-            ? tasks?.filter((t) => t.status === "completed")
-            : tasks?.filter((t) => t.status === "pending")
-          )?.map((task) => (
-            <li
-              key={task._id}
-              className="flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow cursor-pointer"
-            >
-              <div onClick={() => setSelectedTask(task)}>
-                <Typography variant="body1">{task.title}</Typography>
-                <Typography variant="body2" color="textSecondary">
-                  {task.description}
-                </Typography>
-                <Typography variant="caption" className="text-gray-500">
-                  Deadline: {task.deadline} | Priority: {task.priority}
-                </Typography>
-              </div>
-              <div className="flex items-center gap-2">
-                <IconButton
-                  onClick={() => handleToggleStatus(task._id, task.status)}
-                  color={task.status === "pending" ? "success" : "warning"}
-                >
-                  {task.status === "pending" ? (
-                    <CheckCircleIcon />
-                  ) : (
-                    <UndoIcon />
-                  )}
-                </IconButton>
-                <IconButton
-                  onClick={() => handleDeleteTask(task._id)}
-                  color="error"
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </div>
-            </li>
-          ))}
+
+          <div className="max-h-[400px] overflow-y-auto">
+            {(showCompleted
+              ? tasks?.filter((t) => t.status === "completed")
+              : tasks?.filter((t) => t.status === "pending")
+            )?.map((task) => (
+              <li
+                key={task._id}
+                className="flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow cursor-pointer my-2"
+              >
+                <div onClick={() => setSelectedTask(task)}>
+                  <Typography variant="body1">{task.title}</Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    {task.description}
+                  </Typography>
+                  <Typography variant="caption" className="text-gray-500">
+                    Deadline: {task.deadline} | Priority: {task.priority}
+                  </Typography>
+                </div>
+                <div className="flex items-center gap-2">
+                  <IconButton
+                    onClick={() => handleToggleStatus(task._id, task.status)}
+                    color={task.status === "pending" ? "success" : "warning"}
+                  >
+                    {task.status === "pending" ? (
+                      <CheckCircleIcon />
+                    ) : (
+                      <UndoIcon />
+                    )}
+                  </IconButton>
+                  <IconButton
+                    onClick={() => handleDeleteTask(task._id)}
+                    color="error"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </div>
+              </li>
+            ))}
+          </div>
         </CardContent>
       </Card>
+
       {selectedTask !== undefined && (
         <AddTask
           task={selectedTask}

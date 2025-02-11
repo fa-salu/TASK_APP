@@ -13,10 +13,11 @@ const Navbar = () => {
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const user = JSON.parse(Cookies.get("user") || "{}");
 
   const handleLogout = () => {
     Cookies.remove("token");
+    Cookies.remove("user");
     router.push("/login");
   };
 
@@ -29,7 +30,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="flex justify-between items-center p-4 shadow-md bg-white">
+    <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:p-2 shadow-md bg-white">
       <Link href="/task" className="flex text-2xl font-medium">
         T<Image src="/images/logo.svg" alt="Logo" width={30} height={30} />
         <span className="text-sm">s</span>

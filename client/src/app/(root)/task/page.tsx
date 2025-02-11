@@ -4,9 +4,11 @@ import React from "react";
 
 export default function Page() {
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <TaskList />
+      <div className="flex-grow flex flex-col overflow-hidden pt-14 md:pt-16">
+        <TaskList />
+      </div>
     </div>
   );
 }

@@ -29,6 +29,7 @@ const AdminLogin = () => {
     },
     onSuccess: (data) => {
       Cookies.set("token", data.token);
+      Cookies.set("user", JSON.stringify(data.user));
       router.push("/task");
     },
     onError: (err) => {
@@ -41,10 +42,13 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <Card className="p-6 shadow-lg w-96">
-        <h2 className="text-center text-2xl font-bold mb-4">Admin Login</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <Card className="p-8 w-full max-w-md bg-white rounded-xl shadow-xl">
+        <h2 className="text-center text-3xl font-semibold text-gray-800 mb-6">
+          Admin Login
+        </h2>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <TextField
             label="Email"
             variant="outlined"
@@ -53,6 +57,7 @@ const AdminLogin = () => {
             error={!!errors.email}
             helperText={errors.email?.message}
           />
+
           <TextField
             label="Password"
             type="password"
@@ -65,10 +70,11 @@ const AdminLogin = () => {
 
           <Button
             type="submit"
-            variant="contained"
-            color="primary"
+            variant="outlined"
+            color="inherit"
             fullWidth
             disabled={mutation.isPending}
+            className="!mt-4 hover:bg-blue-600"
           >
             {mutation.isPending ? "Logging in..." : "Login"}
           </Button>

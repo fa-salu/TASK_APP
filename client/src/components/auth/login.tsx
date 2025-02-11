@@ -22,6 +22,7 @@ export default function Login() {
     },
     onSuccess: (data) => {
       Cookies.set("token", data.token);
+      Cookies.set("user", JSON.stringify(data.user));
       router.push("/task");
     },
     onError: (error) => {
@@ -39,8 +40,8 @@ export default function Login() {
   };
 
   return (
-    <div className="flex h-screen">
-      <div className="w-1/2 flex items-center justify-center bg-gray-100">
+    <div className="flex flex-col md:flex-row py-10 md:py-0 md:h-screen">
+      <div className="md:flex md:w-1/2 items-center justify-center md:bg-gray-100">
         <Image
           src="/images/task-home.svg"
           alt="Login"
@@ -50,48 +51,55 @@ export default function Login() {
         />
       </div>
 
-      <div className="w-1/2 flex flex-col items-center justify-center p-8">
-        <h2 className="text-3xl font-bold mb-6">Login</h2>
-        <form className="w-full max-w-sm" onSubmit={handleSubmit}>
-          <TextField
-            label="Email"
-            variant="outlined"
-            fullWidth
-            className="mb-4"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-          />
-          <TextField
-            label="Password"
-            variant="outlined"
-            type={showPassword ? "text" : "password"}
-            fullWidth
-            className="mb-4"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            InputProps={{
-              endAdornment: (
-                <IconButton onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              ),
-            }}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            type="submit"
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending ? "Logging in..." : "Login"}
-          </Button>
+      <div className="w-full md:w-1/2 flex flex-col  items-center justify-center px-6 sm:px-12">
+        <h2 className="text-3xl font-bold mb-6 text-center">Login</h2>
+
+        <form
+          className="w-full max-w-sm bg-white p-6 rounded-lg shadow-md"
+          onSubmit={handleSubmit}
+        >
+          <div className="space-y-4">
+            <TextField
+              label="Email"
+              variant="outlined"
+              fullWidth
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+            />
+
+            <TextField
+              label="Password"
+              variant="outlined"
+              type={showPassword ? "text" : "password"}
+              fullWidth
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              InputProps={{
+                endAdornment: (
+                  <IconButton onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                ),
+              }}
+            />
+
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              type="submit"
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending ? "Logging in..." : "Login"}
+            </Button>
+          </div>
         </form>
-        <p className="mt-4">
+
+        <p className="mt-4 text-center">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-blue-600">
+          <Link href="/register" className="text-blue-600 font-medium">
             Sign up
           </Link>
         </p>
