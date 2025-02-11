@@ -15,12 +15,14 @@ import AddTask from "@/components/task/addTask";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import UndoIcon from "@mui/icons-material/Undo";
+import { Task } from "@/types/task";
 
 const TaskList = () => {
   const { data: tasks, isLoading } = useTasks();
   const updateTaskStatus = useUpdateTaskStatus();
   const deleteTask = useDeleteTask();
   const [showCompleted, setShowCompleted] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
 
   if (isLoading) {
     return (
@@ -29,11 +31,6 @@ const TaskList = () => {
       </div>
     );
   }
-
-  const totalTasks = tasks?.length || 0;
-  const pendingTasks = tasks?.filter((task) => task.status === "pending") || [];
-  const completedTasks =
-    tasks?.filter((task) => task.status === "completed") || [];
 
   const handleToggleStatus = (
     taskId: string,
@@ -50,14 +47,24 @@ const TaskList = () => {
   return (
     <div className="max-w-2xl mx-auto">
       <TaskSummaryBar
-        totalTasks={totalTasks}
-        pendingTasks={pendingTasks.length}
-        completedTasks={completedTasks.length}
+        totalTasks={tasks?.length || 0}
+        pendingTasks={
+          tasks?.filter((task) => task.status === "pending").length || 0
+        }
+        completedTasks={
+          tasks?.filter((task) => task.status === "completed").length || 0
+        }
       />
 
-      <AddTask />
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => setSelectedTask({} as Task)}
+      >
+        Add New Task
+      </Button>
 
-      <div className="flex gap-4 mb-4">
+      <div className="flex gap-4 my-4">
         <Button
           variant={!showCompleted ? "contained" : "outlined"}
           color="warning"
@@ -79,47 +86,51 @@ const TaskList = () => {
           <Typography variant="h6" className="mb-2">
             {showCompleted ? "Completed Tasks" : "Pending Tasks"}
           </Typography>
-          {(showCompleted ? completedTasks : pendingTasks).length === 0 ? (
-            <Typography variant="body2" color="textSecondary">
-              No {showCompleted ? "completed" : "pending"} tasks
-            </Typography>
-          ) : (
-            <ul className="space-y-3">
-              {(showCompleted ? completedTasks : pendingTasks).map((task) => (
-                <li
-                  key={task._id}
-                  className="flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow"
+          {(showCompleted
+            ? tasks?.filter((t) => t.status === "completed")
+            : tasks?.filter((t) => t.status === "pending")
+          )?.map((task) => (
+            <li
+              key={task._id}
+              className="flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow cursor-pointer"
+            >
+              <div onClick={() => setSelectedTask(task)}>
+                <Typography variant="body1">{task.title}</Typography>
+                <Typography variant="body2" color="textSecondary">
+                  {task.description}
+                </Typography>
+                <Typography variant="caption" className="text-gray-500">
+                  Deadline: {task.deadline} | Priority: {task.priority}
+                </Typography>
+              </div>
+              <div className="flex items-center gap-2">
+                <IconButton
+                  onClick={() => handleToggleStatus(task._id, task.status)}
+                  color={task.status === "pending" ? "success" : "warning"}
                 >
-                  <div>
-                    <Typography variant="body1">{task.title}</Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      {task.description}
-                    </Typography>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <IconButton
-                      onClick={() => handleToggleStatus(task._id, task.status)}
-                      color={task.status === "pending" ? "success" : "warning"}
-                    >
-                      {task.status === "pending" ? (
-                        <CheckCircleIcon />
-                      ) : (
-                        <UndoIcon />
-                      )}
-                    </IconButton>
-                    <IconButton
-                      onClick={() => handleDeleteTask(task._id)}
-                      color="error"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+                  {task.status === "pending" ? (
+                    <CheckCircleIcon />
+                  ) : (
+                    <UndoIcon />
+                  )}
+                </IconButton>
+                <IconButton
+                  onClick={() => handleDeleteTask(task._id)}
+                  color="error"
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </div>
+            </li>
+          ))}
         </CardContent>
       </Card>
+      {selectedTask !== undefined && (
+        <AddTask
+          task={selectedTask}
+          onClose={() => setSelectedTask(undefined)}
+        />
+      )}
     </div>
   );
 };

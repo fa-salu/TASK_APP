@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useCreateTask } from "@/hooks/useTasks";
+import { useEffect } from "react";
+import { useCreateTask, useUpdateTask } from "@/hooks/useTasks";
 import {
   Button,
   TextField,
@@ -23,83 +23,109 @@ import { taskSchema } from "@/validation/taskValidation";
 
 type TaskFormData = z.infer<typeof taskSchema>;
 
-const AddTask = () => {
+interface AddTaskProps {
+  task?: Task | null;
+  onClose: () => void;
+}
+
+const AddTask = ({ task, onClose }: AddTaskProps) => {
   const createTask = useCreateTask();
-  const [open, setOpen] = useState(false);
+  const updateTask = useUpdateTask();
+  const isUpdateMode = task && Object.keys(task).length > 0;
+  console.log("tod", task);
+  console.log("d", isUpdateMode);
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
+    defaultValues: task || {
+      title: "",
+      description: "",
+      deadline: "",
+      priority: "low",
+    },
   });
 
+  useEffect(() => {
+    if (task) {
+      setValue("title", task.title);
+      setValue("description", task.description);
+      setValue("deadline", task.deadline);
+      setValue("priority", task.priority);
+    }
+  }, [task, setValue]);
+
   const onSubmit = (data: TaskFormData) => {
-    createTask.mutate({ ...data, status: "pending" } as Partial<Task>);
-    setOpen(false);
+    if (isUpdateMode) {
+      updateTask.mutate({ id: task!._id, data });
+    } else {
+      createTask.mutate({ ...data, status: "pending" } as Partial<Task>);
+    }
+    onClose();
     reset();
   };
 
   return (
-    <div className="mb-4 text-right">
-      <Button variant="contained" color="primary" onClick={() => setOpen(true)}>
-        Add New Task
-      </Button>
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>Add Task</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Title"
-            fullWidth
-            margin="dense"
-            {...register("title")}
-            error={!!errors.title}
-            helperText={errors.title?.message}
-          />
-          <TextField
-            label="Description"
-            fullWidth
-            margin="dense"
-            {...register("description")}
-            error={!!errors.description}
-            helperText={errors.description?.message}
-          />
-          <TextField
-            label="Deadline"
-            type="date"
-            fullWidth
-            margin="dense"
-            {...register("deadline")}
-            InputLabelProps={{ shrink: true }}
-            error={!!errors.deadline}
-            helperText={errors.deadline?.message}
-          />
-          <FormControl fullWidth margin="dense" error={!!errors.priority}>
-            <InputLabel>Priority</InputLabel>
-            <Select {...register("priority")} defaultValue="low">
-              <MenuItem value="low">Low</MenuItem>
-              <MenuItem value="medium">Medium</MenuItem>
-              <MenuItem value="high">High</MenuItem>
-            </Select>
-            {errors.priority && (
-              <FormHelperText>{errors.priority.message}</FormHelperText>
-            )}
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button
-            onClick={handleSubmit(onSubmit)}
-            color="primary"
-            variant="contained"
+    <Dialog open={!!task} onClose={onClose}>
+      <DialogTitle>{isUpdateMode ? "Update Task" : "Add Task"}</DialogTitle>
+      <DialogContent>
+        <TextField
+          label="Title"
+          fullWidth
+          margin="dense"
+          {...register("title")}
+          error={!!errors.title}
+          helperText={errors.title?.message}
+        />
+        <TextField
+          label="Description"
+          fullWidth
+          margin="dense"
+          {...register("description")}
+          error={!!errors.description}
+          helperText={errors.description?.message}
+        />
+        <TextField
+          label="Deadline"
+          type="date"
+          fullWidth
+          margin="dense"
+          {...register("deadline")}
+          InputLabelProps={{ shrink: true }}
+          error={!!errors.deadline}
+          helperText={errors.deadline?.message}
+        />
+        <FormControl fullWidth margin="dense" error={!!errors.priority}>
+          <InputLabel>Priority</InputLabel>
+          <Select
+            {...register("priority")}
+            defaultValue={task?.priority || "low"}
           >
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+            <MenuItem value="low">Low</MenuItem>
+            <MenuItem value="medium">Medium</MenuItem>
+            <MenuItem value="high">High</MenuItem>
+          </Select>
+          {errors.priority && (
+            <FormHelperText>{errors.priority.message}</FormHelperText>
+          )}
+        </FormControl>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button
+          onClick={handleSubmit(onSubmit)}
+          color="primary"
+          variant="contained"
+        >
+          {isUpdateMode ? "Update" : "Add"}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
