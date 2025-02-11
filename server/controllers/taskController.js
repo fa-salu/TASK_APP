@@ -26,8 +26,12 @@ export const createTask = async (req, res) => {
 
 export const getTasks = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const tasks = await Task.find({ userId }).sort({ deadline: 1 });
+    let tasks;
+    if (req.user.role === "admin") {
+      tasks = await Task.find().sort({ deadline: 1 });
+    } else {
+      tasks = await Task.find({ userId: req.user.id }).sort({ deadline: 1 });
+    }
 
     res.status(200).json(tasks);
   } catch (error) {
@@ -45,7 +49,7 @@ export const getTaskById = async (req, res) => {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    if (task.userId.toString() !== req.user.id) {
+    if (req.user.role !== "admin" && task.userId.toString() !== req.user.id) {
       return res.status(403).json({ message: "Unauthorized access" });
     }
 
@@ -59,7 +63,6 @@ export const getTaskById = async (req, res) => {
 
 export const updateTask = async (req, res) => {
   try {
-    console.log("req", req.body);
     const validation = taskSchema.safeParse(req.body);
     if (!validation.success) {
       return res.status(400).json({
@@ -67,7 +70,6 @@ export const updateTask = async (req, res) => {
         errors: validation.error.errors,
       });
     }
-    console.log("val");
     const { title, description, deadline, priority, status } = req.body;
     const task = await Task.findById(req.params.id);
 
@@ -75,7 +77,7 @@ export const updateTask = async (req, res) => {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    if (task.userId.toString() !== req.user.id) {
+    if (req.user.role !== "admin" && task.userId.toString() !== req.user.id) {
       return res
         .status(403)
         .json({ message: "Unauthorized to update this task" });
@@ -98,8 +100,6 @@ export const updateTask = async (req, res) => {
 
 export const updateTaskStatus = async (req, res) => {
   try {
-    console.log("req", req.body);
-
     const statusValidation = taskSchema.shape.status.safeParse(req.body.status);
     if (!statusValidation.success) {
       return res.status(400).json({
@@ -113,7 +113,7 @@ export const updateTaskStatus = async (req, res) => {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    if (task.userId.toString() !== req.user.id) {
+    if (req.user.role !== "admin" && task.userId.toString() !== req.user.id) {
       return res
         .status(403)
         .json({ message: "Unauthorized to update this task" });
@@ -138,7 +138,7 @@ export const deleteTask = async (req, res) => {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    if (task.userId.toString() !== req.user.id) {
+    if (req.user.role !== "admin" && task.userId.toString() !== req.user.id) {
       return res
         .status(403)
         .json({ message: "Unauthorized to delete this task" });
