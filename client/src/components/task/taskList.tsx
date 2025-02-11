@@ -18,6 +18,7 @@ import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import UndoIcon from "@mui/icons-material/Undo";
+import Cookies from "js-cookie";
 import { Task } from "@/types/task";
 
 const TaskList = () => {
@@ -26,6 +27,23 @@ const TaskList = () => {
   const deleteTask = useDeleteTask();
   const [showCompleted, setShowCompleted] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
+
+  const getUserRole = (): string | null => {
+    const userData = Cookies.get("user");
+
+    if (userData) {
+      try {
+        const parsedData = JSON.parse(userData);
+        return parsedData.role || null;
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        return null;
+      }
+    }
+
+    return null;
+  };
+  const userRole = getUserRole();
 
   if (isLoading) {
     return (
@@ -93,15 +111,17 @@ const TaskList = () => {
           Completed
         </Button>
 
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddCircleOutlineIcon />}
-          onClick={() => setSelectedTask({} as Task)}
-          className="rounded-lg"
-        >
-          Add Task
-        </Button>
+        {userRole !== "admin" && (
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddCircleOutlineIcon />}
+            onClick={() => setSelectedTask({} as Task)}
+            className="rounded-lg"
+          >
+            Add Task
+          </Button>
+        )}
       </div>
 
       <Card className="shadow-md p-4">
