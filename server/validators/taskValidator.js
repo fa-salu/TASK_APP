@@ -12,4 +12,9 @@ export const taskSchema = z.object({
     ["low", "medium", "high"],
     "Priority must be one of: low, medium, high"
   ),
+  status: z
+    .enum(["pending", "completed"], {
+      message: "Status must be either 'pending' or 'completed'",
+    })
+    .default("pending"),
 });

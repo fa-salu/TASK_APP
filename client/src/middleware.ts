@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const isUserProtectedRoute = (route: string) => route.startsWith("/home");
+const isUserProtectedRoute = (route: string) => route.startsWith("/task");
 
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
@@ -12,7 +12,7 @@ export function middleware(req: NextRequest) {
 
   if (pathname === "/") {
     if (token) {
-      url.pathname = "/home";
+      url.pathname = "/task";
     } else {
       url.pathname = "/login";
     }
@@ -25,7 +25,7 @@ export function middleware(req: NextRequest) {
   }
 
   if (token && (pathname === "/login" || pathname === "/register")) {
-    url.pathname = "/home";
+    url.pathname = "/task";
     return NextResponse.redirect(url);
   }
 

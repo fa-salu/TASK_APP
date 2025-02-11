@@ -7,8 +7,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import axiosInstance from "@/utils/axiosInstance";
 import Cookies from "js-cookie";
+import { axiosInstance } from "@/utils/axiosInstance";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +22,7 @@ export default function Login() {
     },
     onSuccess: (data) => {
       Cookies.set("token", data.token);
-      router.push("/home");
+      router.push("/task");
     },
     onError: (error) => {
       console.error("Login failed:", error);
