@@ -47,6 +47,19 @@ const TaskList = () => {
     deleteTask.mutate(taskId);
   };
 
+  const getPriorityBorderColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case "high":
+        return "border-red-500";
+      case "medium":
+        return "border-yellow-500";
+      case "low":
+        return "border-green-500";
+      default:
+        return "border-gray-300";
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto md:mt-4">
       <TaskSummaryBar
@@ -104,7 +117,9 @@ const TaskList = () => {
             )?.map((task) => (
               <li
                 key={task._id}
-                className="flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow cursor-pointer my-2"
+                className={`flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow cursor-pointer my-2 border-l-4 ${getPriorityBorderColor(
+                  task.priority
+                )}`}
               >
                 <div onClick={() => setSelectedTask(task)}>
                   <Typography variant="body1">{task.title}</Typography>
@@ -112,7 +127,9 @@ const TaskList = () => {
                     {task.description}
                   </Typography>
                   <Typography variant="caption" className="text-gray-500">
-                    Deadline: {task.deadline} | Priority: {task.priority}
+                    Deadline:{" "}
+                    {new Date(task.deadline).toLocaleDateString("en-GB")} |
+                    Priority: {task.priority}
                   </Typography>
                 </div>
                 <div className="flex items-center gap-2">
