@@ -1,6 +1,6 @@
 import { verifyToken } from "../utils/tokenUtils.js";
 
-const authMiddleware = (req, res, next) => {
+const verifyAuth = (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
@@ -8,11 +8,13 @@ const authMiddleware = (req, res, next) => {
     }
 
     const decoded = verifyToken(token);
-    req.userId = decoded.id;
+
+    req.user = { id: decoded.id };
+
     next();
   } catch (error) {
     res.status(401).json({ message: "Invalid token" });
   }
 };
 
-export default authMiddleware;
+export default verifyAuth;
