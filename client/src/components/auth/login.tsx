@@ -4,6 +4,7 @@ import { TextField, Button, IconButton } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useState } from "react";
 import Image from "next/image";
+import { AxiosError } from "axios";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -13,6 +14,8 @@ import { axiosInstance } from "@/utils/axiosInstance";
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const router = useRouter();
 
   const mutation = useMutation({
@@ -25,8 +28,24 @@ export default function Login() {
       Cookies.set("user", JSON.stringify(data.user));
       router.push("/task");
     },
-    onError: (error) => {
-      console.error("Login failed:", error);
+    onError: (
+      error: AxiosError<{ message?: string; errors?: Record<string, string[]> }>
+    ) => {
+      if (error.response?.data) {
+        const { message, errors } = error.response.data;
+
+        setLoginError(message || "Login failed");
+
+        if (errors) {
+          const formattedErrors: Record<string, string> = {};
+          Object.keys(errors).forEach((key) => {
+            formattedErrors[key] = errors[key].join(", ");
+          });
+          setFieldErrors(formattedErrors);
+        }
+      } else {
+        setLoginError("Something went wrong. Please try again.");
+      }
     },
   });
 
@@ -36,6 +55,7 @@ export default function Login() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError(null);
     mutation.mutate();
   };
 
@@ -66,6 +86,8 @@ export default function Login() {
               name="email"
               value={formData.email}
               onChange={handleChange}
+              error={!!fieldErrors.email}
+              helperText={fieldErrors.email}
             />
 
             <TextField
@@ -76,6 +98,8 @@ export default function Login() {
               name="password"
               value={formData.password}
               onChange={handleChange}
+              error={!!fieldErrors.email}
+              helperText={fieldErrors.email}
               InputProps={{
                 endAdornment: (
                   <IconButton onClick={() => setShowPassword(!showPassword)}>
@@ -84,6 +108,10 @@ export default function Login() {
                 ),
               }}
             />
+
+            {loginError && (
+              <p className="text-red-500 text-sm mt-2">{loginError}</p>
+            )}
 
             <Button
               variant="contained"

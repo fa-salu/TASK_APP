@@ -4,11 +4,12 @@ import { TextField, Button, IconButton } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useState } from "react";
 import Image from "next/image";
+import { AxiosError } from "axios";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { axiosInstance } from "@/utils/axiosInstance";
 import Cookies from "js-cookie";
+import { axiosInstance } from "@/utils/axiosInstance";
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,6 +19,8 @@ export default function Register() {
     password: "",
   });
 
+  const [registerError, setRegisterError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const router = useRouter();
 
   const mutation = useMutation({
@@ -30,6 +33,25 @@ export default function Register() {
       Cookies.set("user", JSON.stringify(data.user));
       router.push("/task");
     },
+    onError: (
+      error: AxiosError<{ message?: string; errors?: Record<string, string[]> }>
+    ) => {
+      if (error.response?.data) {
+        const { message, errors } = error.response.data;
+
+        setRegisterError(message || "Registration failed");
+
+        if (errors) {
+          const formattedErrors: Record<string, string> = {};
+          Object.keys(errors).forEach((key) => {
+            formattedErrors[key] = errors[key].join(", ");
+          });
+          setFieldErrors(formattedErrors);
+        }
+      } else {
+        setRegisterError("Something went wrong. Please try again.");
+      }
+    },
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,12 +60,14 @@ export default function Register() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setRegisterError(null);
+    setFieldErrors({});
     mutation.mutate();
   };
 
   return (
     <div className="flex flex-col md:flex-row py-10 md:py-0 md:h-screen">
-      <div className=" md:flex md:w-1/2 items-center justify-center  md:bg-gray-100">
+      <div className="md:flex md:w-1/2 items-center justify-center md:bg-gray-100">
         <Image
           src="/images/task-home.svg"
           alt="Register"
@@ -68,6 +92,8 @@ export default function Register() {
               name="name"
               value={formData.name}
               onChange={handleChange}
+              error={!!fieldErrors.name}
+              helperText={fieldErrors.name}
             />
 
             <TextField
@@ -77,6 +103,8 @@ export default function Register() {
               name="email"
               value={formData.email}
               onChange={handleChange}
+              error={!!fieldErrors.email}
+              helperText={fieldErrors.email}
             />
 
             <TextField
@@ -87,6 +115,8 @@ export default function Register() {
               name="password"
               value={formData.password}
               onChange={handleChange}
+              error={!!fieldErrors.password}
+              helperText={fieldErrors.password}
               InputProps={{
                 endAdornment: (
                   <IconButton onClick={() => setShowPassword(!showPassword)}>
@@ -95,6 +125,10 @@ export default function Register() {
                 ),
               }}
             />
+
+            {registerError && (
+              <p className="text-red-500 text-sm mt-2">{registerError}</p>
+            )}
 
             <Button
               variant="contained"

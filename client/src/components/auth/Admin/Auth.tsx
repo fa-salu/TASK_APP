@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { TextField, Button, Card } from "@mui/material";
+import { TextField, Button, Card, Alert } from "@mui/material";
 import { adminLogin } from "@/validation/adminLoginValidation";
 import Cookies from "js-cookie";
 import { axiosInstance } from "@/utils/axiosInstance";
+import { AxiosError } from "axios";
 
 type LoginFormData = z.infer<typeof adminLogin>;
 
@@ -17,6 +18,7 @@ const AdminLogin = () => {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(adminLogin),
@@ -32,8 +34,26 @@ const AdminLogin = () => {
       Cookies.set("user", JSON.stringify(data.user));
       router.push("/task");
     },
-    onError: (err) => {
-      console.error("Login error:", err);
+    onError: (
+      error: AxiosError<{ message?: string; errors?: Record<string, string[]> }>
+    ) => {
+      if (error.response?.data) {
+        const { message, errors: fieldErrors } = error.response.data;
+
+        if (fieldErrors) {
+          Object.entries(fieldErrors).forEach(([key, value]) => {
+            setError(key as keyof LoginFormData, { message: value.join(", ") });
+          });
+        }
+
+        if (message) {
+          setError("root", { message });
+        }
+      } else {
+        setError("root", {
+          message: "Something went wrong. Please try again.",
+        });
+      }
     },
   });
 
@@ -47,6 +67,8 @@ const AdminLogin = () => {
         <h2 className="text-center text-3xl font-semibold text-gray-800 mb-6">
           Admin Login
         </h2>
+
+        {errors.root && <Alert severity="error">{errors.root.message}</Alert>}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <TextField
@@ -70,11 +92,10 @@ const AdminLogin = () => {
 
           <Button
             type="submit"
-            variant="outlined"
-            color="inherit"
+            variant="contained"
+            color="primary"
             fullWidth
             disabled={mutation.isPending}
-            className="!mt-4 hover:bg-blue-600"
           >
             {mutation.isPending ? "Logging in..." : "Login"}
           </Button>
