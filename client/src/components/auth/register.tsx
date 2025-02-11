@@ -7,7 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import axiosInstance from "@/utils/axiosInstance";
+import { axiosInstance } from "@/utils/axiosInstance";
 import Cookies from "js-cookie";
 
 export default function Register() {
@@ -27,7 +27,7 @@ export default function Register() {
     },
     onSuccess: (data) => {
       Cookies.set("token", data.token);
-      router.push("/home");
+      router.push("/task");
     },
   });
 

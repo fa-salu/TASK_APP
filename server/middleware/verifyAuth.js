@@ -9,7 +9,7 @@ const verifyAuth = (req, res, next) => {
 
     const decoded = verifyToken(token);
 
-    req.user = { id: decoded.id };
+    req.user = { id: decoded.id, role: decoded.role };
 
     next();
   } catch (error) {

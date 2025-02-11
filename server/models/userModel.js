@@ -1,4 +1,3 @@
-// models/userModel.js
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -16,6 +15,10 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+    },
+    role: {
+      type: String,
+      default: "user",
     },
   },
   { timestamps: true }
